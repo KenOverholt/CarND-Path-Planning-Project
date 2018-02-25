@@ -78,10 +78,10 @@ int NextWaypoint(double x, double y, double theta, const vector<double> &maps_x,
   if(angle > pi()/4)
   {
     closestWaypoint++;
-  if (closestWaypoint == maps_x.size())
-  {
-    closestWaypoint = 0;
-  }
+    if (closestWaypoint == maps_x.size())
+    {
+      closestWaypoint = 0;
+    }
   }
 
   return closestWaypoint;
@@ -272,9 +272,7 @@ int main() {
 				if((check_car_s > car_s) && ((check_car_s-car_s) < 30)) //30 meters
 				{
 
-					// TODO: do some logic here, lower reference velocity so we don't crash into the car in fromt of us, could
-					// also flag to try to change lanes.
-					//ref_vel = 29.5; // mph
+					// TODO: either change lanes or lower reference velocity so we don't crash into the car in fromt of us
 					too_close = true;
 					//TODO: look into the future, what is the best lane to change into
 					//use finite state machine
@@ -413,24 +411,6 @@ int main() {
 		}
 
           	json msgJson;
-
-		/* original test code
-          	vector<double> next_x_vals;
-          	vector<double> next_y_vals;
-
-          	// TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
-          	double dist_inc = 0.4;
-    		for(int i = 0; i < 50; i++)
-    		{
-			double next_s = car_s+(i+1)*dist_inc;
-			double next_d = 6;	//lanes 4m wide; we are 1.5 lanes from center
-			vector<double> xy = getXY(next_s, next_d, map_waypoints_s, map_waypoints_x, map_waypoints_y);
-
-          		next_x_vals.push_back(xy[0]);
-          		next_y_vals.push_back(xy[1]);
-    		}
-		// End updated class code
-		*/
 
 		msgJson["next_x"] = next_x_vals;
           	msgJson["next_y"] = next_y_vals;
