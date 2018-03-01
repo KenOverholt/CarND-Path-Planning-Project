@@ -2,6 +2,7 @@
 #include <math.h>
 #include <uWS/uWS.h>
 #include <chrono>
+#include <ctime>
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -163,6 +164,16 @@ vector<double> getXY(double s, double d, const vector<double> &maps_s, const vec
 	return {x,y};
 }
 
+bool okayToShiftLeft()
+{
+	return true;
+}
+
+bool okayToShiftRight()
+{
+	return true;
+}
+
 int main() {
   uWS::Hub h;
 
@@ -203,10 +214,16 @@ int main() {
 	//start in lane 1;
 	int lane = 1;
 
+	// max speed to travel (slightly below the actual speed limit of 50 mph)
+	double speed_limit = 49.5;
+	
 	// Target reference velocity
 	double ref_vel = 0; //mph
 
-  h.onMessage([&ref_vel, &map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy, &lane]
+	// couter for log entries
+	int log_counter = 0;
+	
+  h.onMessage([&ref_vel, &map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy, &lane, &speed_limit, &counter]
 		(uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -255,7 +272,7 @@ int main() {
 					}
 
 					bool too_close = false;
-
+					
 					//find the car in front of me and plan to take action if necessary
 					for (int i = 0; i < sensor_fusion.size(); i++) //for each other car on the road
 					{
@@ -273,16 +290,28 @@ int main() {
 							//check s values greater than mine and s gap
 							if ((check_car_s > car_s) && ((check_car_s-car_s) < 30)) //30 meters
 							{
-								// TODO: either change lanes or lower reference velocity so we don't crash into the car in fromt of us
 								too_close = true;
+//							}
+//							if (car_speed < speed_limit)
+//							{
 								//TODO: look into the future, what is the best lane to change into
 								// use finite state machine
 								// build a cost function taking into account which lane to get into
 								// use Frenet to help see where other cars are
-								if (lane > 0)
+								
+								log_counter++;
+								if (lane > 0 && okayToShiftLeft() )
 								{
-									lane = 0;
+									lane -= 1;
+									//cout << ctime(&time_stamp) << " switch left to lane: " << lane << endl;
+									cout << log_counter << " switch left to lane: " << lane << endl;
 								}
+								else if ( lane <= 2 && okayToShiftRight() )
+								{
+									lane += 1;
+									//cout << ctime(&time_stamp) << " switch right to lane: " << lane << endl;
+									cout << log_counter << " switch right to lane: " << lane << endl;
+								}								
 							}
 						}
 					}
@@ -292,10 +321,11 @@ int main() {
 				{
 					ref_vel -= .224; //5 m/s^2
 				}
-				else if (ref_vel < 49.5)
+				else if (ref_vel < speed_limit)
 				{
 					ref_vel += .224;
 				}
+				
 
 				//////////////////////////////////////////////////
 				// Plan a new trajectory
