@@ -280,7 +280,11 @@ int main() {
 	// couter for log entries
 	int log_counter = 0;
 	
-  h.onMessage([&ref_vel, &map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy, &lane, &speed_limit, &log_counter]
+	// set to true when the car is in the midst of switching lanes
+	bool shifting_left = false;
+	bool shifting_right = false;
+	
+  h.onMessage([&ref_vel, &map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy, &lane, &speed_limit, &log_counter, &shifting_right, &shifting_left]
 		(uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -343,11 +347,54 @@ int main() {
 							double check_speed = sqrt(vx*vx+vy*vy);
 							double check_car_s = sensor_fusion[i][5];
 
-							check_car_s += ((double)prev_size*.02*check_speed);  //if using previoius points, can project s value out
+							check_car_s += ((double)prev_size*.02*check_speed);  //if using previous points, can project s value out
 							//check s values greater than mine and s gap
 							if ((check_car_s > car_s) && ((check_car_s-car_s) < 30)) //30 meters
 							{
 								too_close = true;
+								
+								//Check whether I am already shifting lanes and, if so, see if it have completed the shift
+								if (shifting_left)
+								{
+									//if I am in the new lane
+									if (car_d>(4*lane) && car_d<(4*lane+4))//left edge of lane is lane*4; right edge of lane is lane*4+4
+									{
+										//we have completed the shift so remove ourselves from the shifting_left state
+										shifting_left = false;
+									}
+									else if ( !okayToShiftLeft(sensor_fusion, lane, car_s, prev_size))
+									{
+										//it has become unsafe to shift left so stop shifting and get back into my original lane
+										lane +=1;
+									}
+									else
+									{
+										//continue shifting left
+									}
+								}// End checking for whether I am already shifting left
+								else if (shifting_right)
+								{
+									//if I am in the new lane
+									if (car_d>(4*lane) && car_d<(4*lane+4))//left edge of lane is lane*4; right edge of lane is lane*4+4
+									{
+										//we have completed the shift so remove ourselves from the shifting_right state
+										shifting_right = false;
+									}
+									else if ( !okayToShiftRight(sensor_fusion, lane, car_s, prev_size))
+									{
+										//it has become unsafe to shift right so stop shifting and get back into my original lane
+										lane -=1;
+									}
+									else
+									{
+										//continue shifting right
+									}
+								}
+								else
+								{
+									//not shifting right or left to continue
+								}
+								
 //							}
 //							if (car_speed < speed_limit)
 //							{
@@ -361,11 +408,17 @@ int main() {
 								{
 									lane -= 1;
 									cout << log_counter << "   -----------SWITCH LEFT TO: " << lane << endl << endl;
+									shifting_left = true;
 								}
 								else if ( lane < 2 && okayToShiftRight(sensor_fusion, lane, car_s, prev_size) )
 								{
 									lane += 1;
 									cout << log_counter << "   -----------SWITCH RIGHT TO: " << lane << endl << endl;
+									shifting_right = true;
+								}
+								else
+								{
+									cout << "    -------------------unable to switch left or right" << endl;
 								}
 							}
 						}
