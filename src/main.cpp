@@ -164,15 +164,72 @@ vector<double> getXY(double s, double d, const vector<double> &maps_s, const vec
 	return {x,y};
 }
 
-bool okayToShiftLeft()
+bool okayToShiftLeft(vector<vector<double>> &sensor_fusion, int lane, double car_s, int prev_size)
 {
-	return true;
+					bool too_close = true; //return value
+					int left_lane = lane-1; //move reference lane to the left
+					
+					//Find any cars in the lane to my left and if they are blocking my path to shift lanes, return false.
+					for (int i = 0; i < sensor_fusion.size(); i++) //for each other car on the road
+					{
+						//check if the car is one lane to the left
+						float check_car_d = sensor_fusion[i][6];
+						//if car is in the lane but offcenter (+/-2 from center)
+						
+						if ( check_car_d>(4*left_lane) && check_car_d<(4*left_lane+4) ) //left edge of lane is lane*4; right edge of lane is lane*4+4
+						{
+							cout << "car " << i << " is in the left lane." << endl;
+							double vx = sensor_fusion[i][3];
+							double vy = sensor_fusion[i][4];
+							double check_speed = sqrt(vx*vx+vy*vy);
+							double check_car_s = sensor_fusion[i][5];
+							
+							check_car_s += ((double)prev_size*.02*check_speed);  //if using previous points, can project s value out
+
+							cout << "   my s: " << car_s << "; other_s: " << check_car_s << " diff: " << car_s-check_car_s << endl;
+							//check s values greater than mine and s gap
+							if ( (check_car_s < car_s+6) && (check_car_s > car_s-6) ) //total car length of 6 meters
+							{
+								cout << "     TOO CLOSE" << endl;
+								too_close = false;
+							}
+						}
+					}
+	return too_close;
 }
 
-bool okayToShiftRight()
+bool okayToShiftRight(vector<vector<double>> &sensor_fusion, int lane, double car_s, int prev_size)
 {
-	return true;
-}
+					bool too_close = true; //return value
+					int right_lane = lane+1; //move reference lane to the right
+					
+					//Find any cars in the lane to my right and if they are blocking my path to shift lanes, return false.
+					for (int i = 0; i < sensor_fusion.size(); i++) //for each other car on the road
+					{
+						//check if the car is one lane to the right
+						float check_car_d = sensor_fusion[i][6];
+						//if car is in the lane but offcenter (+/-2 from center)
+						
+						if ( check_car_d>(4*right_lane) && check_car_d<(4*right_lane+4) ) //left edge of lane is lane*4; right edge of lane is lane*4+4
+						{
+							cout << "car " << i << " is in the right lane." << endl;
+							double vx = sensor_fusion[i][3];
+							double vy = sensor_fusion[i][4];
+							double check_speed = sqrt(vx*vx+vy*vy);
+							double check_car_s = sensor_fusion[i][5];
+							
+							check_car_s += ((double)prev_size*.02*check_speed);  //if using previous points, can project s value out
+
+							cout << "  my s: " << car_s << "; other_s: " << check_car_s << " diff: " << car_s-check_car_s << endl;
+							//check s values greater than mine and s gap
+							if ( (check_car_s < car_s+6) && (check_car_s > car_s-6) ) //total car length of 6 meters
+							{
+								cout << "     TOO CLOSE" << endl;
+								too_close = false;
+							}
+						}
+					}
+	return too_close;}
 
 int main() {
   uWS::Hub h;
@@ -223,7 +280,7 @@ int main() {
 	// couter for log entries
 	int log_counter = 0;
 	
-  h.onMessage([&ref_vel, &map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy, &lane, &speed_limit, &counter]
+  h.onMessage([&ref_vel, &map_waypoints_x, &map_waypoints_y, &map_waypoints_s, &map_waypoints_dx, &map_waypoints_dy, &lane, &speed_limit, &log_counter]
 		(uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -300,18 +357,16 @@ int main() {
 								// use Frenet to help see where other cars are
 								
 								log_counter++;
-								if (lane > 0 && okayToShiftLeft() )
+								if (lane > 0 && okayToShiftLeft(sensor_fusion, lane, car_s, prev_size) )
 								{
 									lane -= 1;
-									//cout << ctime(&time_stamp) << " switch left to lane: " << lane << endl;
-									cout << log_counter << " switch left to lane: " << lane << endl;
+									cout << log_counter << "   -----------SWITCH LEFT TO: " << lane << endl << endl;
 								}
-								else if ( lane <= 2 && okayToShiftRight() )
+								else if ( lane < 2 && okayToShiftRight(sensor_fusion, lane, car_s, prev_size) )
 								{
 									lane += 1;
-									//cout << ctime(&time_stamp) << " switch right to lane: " << lane << endl;
-									cout << log_counter << " switch right to lane: " << lane << endl;
-								}								
+									cout << log_counter << "   -----------SWITCH RIGHT TO: " << lane << endl << endl;
+								}
 							}
 						}
 					}
