@@ -6,22 +6,29 @@ The goal of this project is to safely navigate around a virtual highway with oth
 
 ## How I Satisfied the Project's Goals
 
-For each message that comes in from the simulator, the program loops through all the other cars checking to see if any are within 30 meters ahead of the primary car.
+For each message that comes in from the simulator, the program loops through all the other cars checking to see if any are within 30 meters ahead of the primary car.  Lines 337-8 look through the cars which are stored in sensor_fusion.
 
     //find the car in front of me and plan to take action if necessary
     for (int i = 0; i < sensor_fusion.size(); i++) //for each other car on the road
 
-If one is found, the program checks whether the car is currently shifting left or right.  It tracks this through a state variable that gets set when a shift starts.  If the car is currently shifting, it checks whether it is still safe to shift.  If it is, it will continue.  If not, it will cancel the shift and go back to its current lane.
+The car's coordinates are measured as Frenet coordinates which are s for the length down the road and d for the offset from the center.  In this case, lane represents the number of the land in which the primary car is riding so the d value from each other car has its compared to see if it is within the width of the primary car's lane.  This comparison is in line 343:
+
+    if ( d>(4*lane) && d<(4*lane+4) ) //left edge of lane is lane*4; right edge of lane is lane*4+4
+
+When another car is found in the lane, it is checked to determine whether it is within 30 meters ahead of the primary car (line 352):
+
+    //check s values greater than mine and s gap
+    if ((check_car_s > car_s) && ((check_car_s-car_s) < 30)) //30 meters
+
+If one is found, the program checks whether the car is currently shifting left or right.  It tracks this through a state variable that gets set when a shift starts.  If the car is currently shifting, it checks whether it is still safe to shift.  If it is, it will continue.  If not, it will cancel the shift and stay in its current lane (lines 352-96).
 
 If the car is not currently shifting, it checks whether it is safe to shift one lane left by cycling through all the other cars on the track and checking their Frenet d value to determine whether it is similar to the car's current value.  If so, the other car is next to the car so it can't shift or it will cause a collision.  If left is unavailable, it will check to shift right.  If that is unavailable, it will stay in its current lane.
 
-Next, if the program has determined their is a car too close ahead, it will lower the car's velocity.
+Next, if the program has determined there is a car too close ahead, it will lower the car's velocity (lines 419-27).
 
-Once the desired lane and velocity are determined, a trajecty is calculated.  
+Once the desired lane and velocity are determined, a trajecty is calculated (lines 430-545).  
 
 
-
-					
 
 
 ### Simulator.
