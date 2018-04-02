@@ -6,6 +6,7 @@ The goal of this project is to safely navigate around a virtual highway with oth
 
 ## How I Satisfied the Project's Goals
 
+### Setting the car's goals
 For each message that comes in from the simulator, the program loops through all the other cars checking to see if any are within 30 meters ahead of the primary car.  Lines 337-8 look through the cars which are stored in sensor_fusion.
 
     //find the car in front of me and plan to take action if necessary
@@ -26,10 +27,14 @@ If the car is not currently shifting, it checks whether it is safe to shift one 
 
 Next, if the program has determined there is a car too close ahead, it will lower the car's velocity (lines 419-27).
 
+### Planning the car's trajectory
 Once the desired lane and velocity are determined, a trajecty is calculated (lines 430-545).  
 
+The high-level approach is to create a list of widely-spaced points waypoints evenly-spaced at 30 meters and then interpolate intermediate points with a spline and fill it in with more points to control the speed.
 
+We either will reference the starting point as where the car is or at the previous paths and point.  If the previous size is almost empty, use the car as starting reference (lines 446-57).  If there are plenty of points, we use the previous path's endpoint as a starting reference (lines 459-75).
 
+In lines 477-489, we use Frenet coordinates to add evenly 30m spaced points ahead of the starting reference.  Shift car reference angle to 0 degrees in lines 490-8.  Next create a spline, fill in the points, and rotate them back to normal (lines 499-544).
 
 ### Simulator.
 You can download the Term3 Simulator which contains the Path Planning Project from the [releases tab (https://github.com/udacity/self-driving-car-sim/releases).
