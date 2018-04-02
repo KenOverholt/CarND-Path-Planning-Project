@@ -188,7 +188,7 @@ bool okayToShiftLeft(vector<vector<double>> &sensor_fusion, int lane, double car
 
 							cout << "   my s: " << car_s << "; other_s: " << check_car_s << " diff: " << car_s-check_car_s << endl;
 							//check s values greater than mine and s gap
-							if ( (check_car_s < car_s+6) && (check_car_s > car_s-6) ) //total car length of 6 meters
+							if ( (check_car_s < car_s+8) && (check_car_s > car_s-8) ) //total car length of 6 meters
 							{
 								cout << "     TOO CLOSE" << endl;
 								too_close = false;
@@ -222,7 +222,7 @@ bool okayToShiftRight(vector<vector<double>> &sensor_fusion, int lane, double ca
 
 							cout << "  my s: " << car_s << "; other_s: " << check_car_s << " diff: " << car_s-check_car_s << endl;
 							//check s values greater than mine and s gap
-							if ( (check_car_s < car_s+6) && (check_car_s > car_s-6) ) //total car length of 6 meters
+							if ( (check_car_s < car_s+8) && (check_car_s > car_s-8) ) //total car length of 6 meters
 							{
 								cout << "     TOO CLOSE" << endl;
 								too_close = false;
