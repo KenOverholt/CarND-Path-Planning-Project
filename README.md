@@ -1,11 +1,31 @@
 # CarND-Path-Planning-Project
 Self-Driving Car Engineer Nanodegree Program
-   
-### Simulator.
-You can download the Term3 Simulator which contains the Path Planning Project from the [releases tab (https://github.com/udacity/self-driving-car-sim/releases).
 
 ### Goals
-In this project the goal is to safely navigate around a virtual highway with other traffic that is driving +-10 MPH of the 50 MPH speed limit. The car's localization and sensor fusion data are provided.  There is also a sparse map list of waypoints around the highway. The car should try to go as close as possible to the 50 MPH speed limit which means passing slower traffic when possible.  Note that other cars will try to change lanes too. The car should avoid hitting other cars at all costs and should drive inside of the marked road lanes at all times unless switching from one lane to another. The car should be able to make one complete loop around the 6946m highway. Since the car is trying to go 50 MPH, it should take a little over 5 minutes to complete 1 loop. Also the car should not experience total acceleration over 10 m/s^2 and jerk that is greater than 10 m/s^3.
+The goal of this project is to safely navigate around a virtual highway with other traffic that is driving +-10 MPH of the 50 MPH speed limit. The car's localization and sensor fusion data are provided.  There is also a sparse map list of waypoints around the highway. The car should try to go as close as possible to the 50 MPH speed limit which means passing slower traffic when possible.  Note that other cars will try to change lanes too. The car should avoid hitting other cars at all costs and should drive inside of the marked road lanes at all times unless switching from one lane to another. The car should be able to make one complete loop around the 6946m highway. Since the car is trying to go 50 MPH, it should take a little over 5 minutes to complete 1 loop. Also the car should not experience total acceleration over 10 m/s^2 and jerk that is greater than 10 m/s^3.
+
+## How I Satisfied the Project's Goals
+
+For each message that comes in from the simulator, the program loops through all the other cars checking to see if any are within 30 meters ahead of the primary car.
+
+    //find the car in front of me and plan to take action if necessary
+    for (int i = 0; i < sensor_fusion.size(); i++) //for each other car on the road
+
+If one is found, the program checks whether the car is currently shifting left or right.  It tracks this through a state variable that gets set when a shift starts.  If the car is currently shifting, it checks whether it is still safe to shift.  If it is, it will continue.  If not, it will cancel the shift and go back to its current lane.
+
+If the car is not currently shifting, it checks whether it is safe to shift one lane left by cycling through all the other cars on the track and checking their Frenet d value to determine whether it is similar to the car's current value.  If so, the other car is next to the car so it can't shift or it will cause a collision.  If left is unavailable, it will check to shift right.  If that is unavailable, it will stay in its current lane.
+
+Next, if the program has determined their is a car too close ahead, it will lower the car's velocity.
+
+Once the desired lane and velocity are determined, a trajecty is calculated.  
+
+
+
+					
+
+
+### Simulator.
+You can download the Term3 Simulator which contains the Path Planning Project from the [releases tab (https://github.com/udacity/self-driving-car-sim/releases).
 
 #### The map of the highway is in data/highway_map.txt
 Each waypoint in the list contains  [x,y,s,dx,dy] values. x and y are the waypoint's map coordinate position, the s value is the distance along the road to get to that waypoint in meters, the dx and dy values define the unit normal vector pointing outward of the highway loop.
