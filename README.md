@@ -38,8 +38,13 @@ In lines 477-489, we use Frenet coordinates to add evenly 30m spaced points ahea
 
 ### Sample run
 
+#### A full lap with no incidents
 ![One lap with no incidents](/images/full_lap.png)
+
+#### Switching to the left lane
 ![Switching left](/images/switching_left.png)
+
+#### Switching to the right lane
 ![Switching right](/images/switching_right.png)
 
 ### Simulator.
