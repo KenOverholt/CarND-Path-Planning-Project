@@ -394,15 +394,7 @@ int main() {
 								{
 									//not shifting right or left to continue
 								}
-								
-//							}
-//							if (car_speed < speed_limit)
-//							{
-								//TODO: look into the future, what is the best lane to change into
-								// use finite state machine
-								// build a cost function taking into account which lane to get into
-								// use Frenet to help see where other cars are
-								
+																
 								log_counter++;
 								if (lane > 0 && okayToShiftLeft(sensor_fusion, lane, car_s, prev_size) )
 								{
