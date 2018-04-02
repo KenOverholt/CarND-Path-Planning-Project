@@ -36,6 +36,12 @@ We either will reference the starting point as where the car is or at the previo
 
 In lines 477-489, we use Frenet coordinates to add evenly 30m spaced points ahead of the starting reference.  Shift car reference angle to 0 degrees in lines 490-8.  Next create a spline, fill in the points, and rotate them back to normal (lines 499-544).
 
+### Sample run
+
+![One lap with no incidents](/images/full_lap.png)
+![Switching left](/images/switching_left.png)
+![Switching right](/images/switching_right.png)
+
 ### Simulator.
 You can download the Term3 Simulator which contains the Path Planning Project from the [releases tab (https://github.com/udacity/self-driving-car-sim/releases).
 
